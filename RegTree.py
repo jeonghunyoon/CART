@@ -20,7 +20,6 @@ class RegTree:
     def bin_split_X(self, X, split_feat, split_val):
         sub_1 = X[nonzero(X[:, split_feat] > split_val)[0], :][0]
         sub_2 = X[nonzero(X[:, split_feat] <= split_val)[0], :][0]
-        print(sub_1)
         return sub_1, sub_2
 
     # ops의 첫번째 원소는 오차범위이고, ops의 2번째 원소는 분할된 node에 포함될 수 있는 최소 원소의 갯수이다
@@ -92,4 +91,4 @@ def data_loader(file_name):
         tokens = line.strip().split('\t')
         float_tokens = map(float, tokens)
         training_set.append(float_tokens)
-    return training_set
+    return matrix(training_set)
