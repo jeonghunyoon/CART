@@ -2,6 +2,12 @@
 
 from numpy import *
 
+def reg_type(X):
+    return mean(X[:, -1])
+
+def reg_err(X):
+    return var(X[:, -1]) * shape(X)[0]
+
 class RegTree:
     def __init__(self):
         # feature : a features used for dividing this node
@@ -12,8 +18,9 @@ class RegTree:
         self.left = None
 
     def bin_split_X(self, X, split_feat, split_val):
-        sub_1 = X[nonzero(X[:, split_feat] > split_val)[0], :]
-        sub_2 = X[nonzero(X[:, split_feat] <= split_val)[0], :]
+        sub_1 = X[nonzero(X[:, split_feat] > split_val)[0], :][0]
+        sub_2 = X[nonzero(X[:, split_feat] <= split_val)[0], :][0]
+        print(sub_1)
         return sub_1, sub_2
 
     # ops의 첫번째 원소는 오차범위이고, ops의 2번째 원소는 분할된 node에 포함될 수 있는 최소 원소의 갯수이다
@@ -55,6 +62,7 @@ class RegTree:
 
         # 위의 continue 문에 걸린 case만 존재할 때
         sub_1, sub_2 = self.bin_split_X(X, best_feat, best_val)
+        print(shape(sub_1), shape(sub_2))
         if (shape(sub_1)[0] < tol_n) or (shape(sub_2)[0] < tol_n):
             return None, leaf_type(X)
 
@@ -85,10 +93,3 @@ def data_loader(file_name):
         float_tokens = map(float, tokens)
         training_set.append(float_tokens)
     return training_set
-
-
-def reg_type(X):
-    return mean(X[:, -1])
-
-def reg_err(X):
-    return var(X[:, -1]) * shape(X)[0]
