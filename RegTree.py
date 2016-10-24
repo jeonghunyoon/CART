@@ -83,8 +83,19 @@ class RegTree:
 
         return reg_tree
 
+    def prune(self, tree, valid_data):
+        if shape(valid_data)[0] == 0:
+            return getMean(tree)
+        l_set, r_set = self.bin_split_X(valid_data, tree['split_feat'], tree['split_val'])
+        if isTree(tree['right']):
+            tree['right'] = self.prune(tree['right'], r_set)
+        if isTree(tree['left']):
+            tree['left'] = self.prune(tree['left'], l_set)
+        if not isTree(tree['right']) and not isTree(tree['left']):
+            error_no_merge = sum(power((l_set[-1] - tree['left'])))
 
-# check whether leaf node is
+
+        # check whether leaf node is
 def isTree(object):
     if (type(object).__name__ == 'dict'):
         return True
