@@ -84,6 +84,20 @@ class RegTree:
         return reg_tree
 
 
+# check whether leaf node is
+def isTree(object):
+    if (type(object).__name__ == 'dict'):
+        return True
+    else:
+        return False
+
+def getMean(tree):
+    if (isTree(tree['left'])):
+        tree['left'] = getMean(tree['left'])
+    if (isTree(tree['right'])):
+        tree['right'] = getMean(tree['right'])
+    return (tree['left'] + tree['right']) / 2
+
 def data_loader(file_name):
     training_set = []
     file_reader = open(file_name)
