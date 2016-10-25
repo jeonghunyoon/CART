@@ -8,7 +8,34 @@ def reg_type(X):
 def reg_err(X):
     return var(X[:, -1]) * shape(X)[0]
 
-class RegTree:
+def linear_solver(data_set):
+    m, n = shape(data_set)
+    X = matrix(ones((m, n)))
+    y = matrix(ones((m, 1)))
+
+    X[:, 1:n] = data_set[:, 0:n-1]
+    y = data_set[:, -1]
+
+    if linalg.det(X.T * X) == 0:
+        raise NameError('This matrix is singular, cannot do inverse, \n \
+                         try increasing the second value of options')
+
+    w = linalg.inv(X.T * X) * X.T * y
+
+    return w, X, y
+
+def model_type(X):
+    w, X, y = linear_solver(X)
+    return w
+
+def model_err(X):
+    w, X, y = linear_solver(X)
+    y_hat = X*w
+
+    return sum(power(y - y_hat, 2))
+
+
+class ModelTree:
     def __init__(self):
         # feature : a features used for dividing this node
         self.feature = 0
@@ -25,7 +52,7 @@ class RegTree:
 
 
     # ops의 첫번째 원소는 오차범위이고, ops의 2번째 원소는 분할된 node에 포함될 수 있는 최소 원소의 갯수이다
-    def choose_best_split(self, X, leaf_type=reg_type, err_type=reg_err, options=(1,4)):
+    def choose_best_split(self, X, leaf_type, err_type, options=(1,4)):
         tol_s = options[0]
         tol_n = options[1]
 
@@ -45,6 +72,13 @@ class RegTree:
 
         # greedy 방식
         for idx in range(n-1):
+            # python 2.7+ 에서는 set(matrix)가 unhashable type 에러를 발생시킴
+            # idxs = []
+            # col = X[:, idx].tolist()
+            # for i in range(len(col)):
+            #    idxs.append(col[i][0])
+            # for val in idxs:
+
             for val in set(X[:, idx]):
                 sub_1, sub_2 = self.bin_split_X(X, idx, val)
                 # tol_n 보다 작으면, split 할 필요가 없다.
@@ -110,7 +144,6 @@ class RegTree:
         else:
             return tree
 
-
 # check whether leaf node is
 def isTree(object):
     if (type(object).__name__ == 'dict'):
@@ -132,6 +165,8 @@ def data_loader(file_name):
     file_reader = open(file_name)
     for line in file_reader.readlines():
         tokens = line.strip().split('\t')
+        # python 2.7+ 에서는 아래와 같이 사용
+        # float_tokens = list(map(float, tokens))
         float_tokens = map(float, tokens)
         training_set.append(float_tokens)
     return matrix(training_set)
