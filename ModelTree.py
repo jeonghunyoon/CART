@@ -5,8 +5,10 @@ from numpy import *
 def reg_type(X):
     return mean(X[:, -1])
 
+
 def reg_err(X):
     return var(X[:, -1]) * shape(X)[0]
+
 
 def linear_solver(data_set):
     m, n = shape(data_set)
@@ -24,15 +26,74 @@ def linear_solver(data_set):
 
     return w, X, y
 
+
 def model_type(X):
     w, X, y = linear_solver(X)
     return w
+
 
 def model_err(X):
     w, X, y = linear_solver(X)
     y_hat = X*w
 
     return sum(power(y - y_hat, 2))
+
+
+# check whether leaf node is
+def isTree(object):
+    if (type(object).__name__ == 'dict'):
+        return True
+    else:
+        return False
+
+
+def getMean(tree):
+    if (isTree(tree['left'])):
+        tree['left'] = getMean(tree['left'])
+    if (isTree(tree['right'])):
+        tree['right'] = getMean(tree['right'])
+    return (tree['left'] + tree['right']) / 2
+
+
+# 모델을 평가하기 위한 함수 (regression tree)
+def reg_tree_eval(model, input_data):
+    return float(model)
+
+
+# 모델을 평가하기 위한 함수 (model tree)
+def model_tree_eval(model, input_data):
+    n = shape(input_data)[1]
+    # (1, x_1, x_2, ..., x_n)의 형태가 되어야 함.
+    X = matrix(ones((1, n+1)))
+    X[:, 1:n+1] = input_data
+
+    return float(X*model)
+
+
+# input data 1개에 대하여 예측값을 계산해준다.
+def tree_fore_cast(tree, input_data, model_eval = reg_tree_eval):
+    if not isTree(tree):
+        return tree
+    if input_data[tree['split_feat']] > tree['split_val']:
+        if isTree(tree['left']):
+            return tree_fore_cast(tree['left'], input_data, model_eval)
+        else:
+            return model_eval(tree['left'], input_data)
+    else:
+        if isTree(tree['right']):
+            return tree_fore_cast(tree['right'], input_data, model_eval)
+        else:
+            return model_eval(tree['right'], input_data)
+
+
+# input data 전체에 대하여 예측값을 계산한다. 즉 내부적으로 tree_fore_cast를 호출한다.
+def create_fore_Cast(tree, test_data, model_eval = reg_tree_eval):
+    m = len(test_data)
+    y_hat = matrix(zeros((m, 1)))
+    for i in range(m):
+        y_hat[i, 0] = tree_fore_cast(tree, test_data[i], model_eval)
+
+    return y_hat
 
 
 class ModelTree:
@@ -143,21 +204,6 @@ class ModelTree:
                 return tree
         else:
             return tree
-
-# check whether leaf node is
-def isTree(object):
-    if (type(object).__name__ == 'dict'):
-        return True
-    else:
-        return False
-
-
-def getMean(tree):
-    if (isTree(tree['left'])):
-        tree['left'] = getMean(tree['left'])
-    if (isTree(tree['right'])):
-        tree['right'] = getMean(tree['right'])
-    return (tree['left'] + tree['right']) / 2
 
 
 def data_loader(file_name):
